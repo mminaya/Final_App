@@ -9,7 +9,7 @@ library(mapproj)
 
 
 
-# load packages prior to running the app in order to have everything running in the app!!
+# load packages prior to running the app in order to have everything running in the app!!!
 
 ui <- fluidPage(theme= shinytheme("cosmo"),
                 titlePanel("Lung Cancer Risk Assesment Tool"),    # Adds Title of the Website, hence Main Title
