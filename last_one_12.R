@@ -2,6 +2,11 @@ library(shinythemes)
 library(shiny)
 library(ggplot2)
 library(dplyr)
+library(RColorBrewer)
+library(tools)
+library(ggrepel)
+library(mapproj)
+
 
 
 # load packages prior to running the app in order to have everything running in the app!!
@@ -67,7 +72,8 @@ ui <- fluidPage(theme= shinytheme("cosmo"),
                                               br()
                                               
                                                           )),
-                           
+##############################################################################################################################
+## BMI tab
                            
                            tabPanel("Body Mass Index Calculator (BMI)",
                                     sidebarPanel(
@@ -80,32 +86,29 @@ ui <- fluidPage(theme= shinytheme("cosmo"),
                                     mainPanel(
                                     h2("Calculated values:"),div(textOutput("text_bmi"), style="font-weight: bold;"), 
                                     textOutput("text_type")),
-                                    img(src="Intro-diagram.jpg", width=420,align="center")),
+                                    img(src="bmi-all.png", width=420,align="center")),
                                     
                             
                            
                            
                            
+########################################################################################
+# Lung cancer Plot                         
                            
-                           
-                           
-                           
-                           tabPanel("Tobacco Use Increases Lung Cancer Risk",
+tabPanel("Tobacco Use Increases Lung Cancer Risk",
                                     sidebarPanel(
                                       helpText("This plot shows a linear regression model of tobacco use and cancer risk. 
                                                The data used to make this plot was gathered from the CDC's website."),
                                       #radioButtons("Region", c("midwest", "northeast","south","west"), selected = "midwest")),
                                       selectInput("Region","Region:", 
-                                                  choices=c("midwest", "northeast","south","west"))),
+                                                  choices=c("northeast", "south","midwest","west"))),
                                     # Show a plot of the generated distribution
                                     mainPanel(
                                       plotOutput("lungplot")
                                     )),
-                           
-                           
-                           
-                           
-                           ##Inserts another tab, lung cancer calculator tab
+
+########################################################################################
+# Lung cancer calculator tab
                            tabPanel("Lung Cancer Risk Calculator",
                                     sidebarPanel(
                                       helpText("This calculator is based on the LLP risk model: an individual risk prediction model for lung cancer. 
@@ -120,7 +123,10 @@ ui <- fluidPage(theme= shinytheme("cosmo"),
                                         choices  = c("Male" = 1, "Female" = 2),
                                         selected = 2
                                       ),
-                                      numericInput("age",label= h4("Age"),value=50),
+                                      
+                                      sliderInput("age", "Age:",
+                                                  min=40, max=84, value=40),
+                                      
                                       numericInput("smoking",label=h4("Number of Years You Have Smoked"), value=1),
                                       
                                       radioButtons(
@@ -144,22 +150,117 @@ ui <- fluidPage(theme= shinytheme("cosmo"),
                                         selected = 0
                                       ),
                                       
-                                      numericInput("family_history", label=h4("Prior Family History of Lung Cancer (Onset)"),value=1)),
+                                      numericInput("family_history", label=h4("Prior Family History of Lung Cancer (Average Onset of Diagnosis)"),value=1)),
                                     mainPanel(span(style="color:black",
                                                    p(h4("Calculated values:")),
-                                                   textOutput("text_risk"), style="font-weight: bold;")))
-                           
-                           
-                           
-                           
-                           
-                           
-                           
-                           
-                           
-                           
-                           ######################################################################################################################################################
-                           ## Do Not touch this part! This is to close the UI part
+                                                   textOutput("text_risk"), style="font-weight: bold;")),
+                                    
+                                    img(src="table2.png", width=700,align="center")
+                                    
+                                    
+                                    
+                                    ),
+# Application title
+tabPanel("Distribution Map",
+         
+         
+         # Sidebar with a slider input for number of bins 
+         sidebarPanel(
+           h1("Smoking and Lung Cancer"),
+           p("There are many factors are associated with lung cancer.",
+             span(strong("Smoking is the most important risk factor associated with lung cancer.")),
+             "Below you can select different years to see how the distribution of smoking rate and lung cancer has changed across the United States."),
+           
+           
+           radioButtons("year","Year" ,
+                        c("2011" = "2011",
+                          "2012" = "2012",
+                          "2013" = "2013",
+                          "2014" = "2014",
+                          "2015" = "2015"))
+         ),
+         
+         # Show a plot of the generated distribution
+         mainPanel(
+           
+           plotOutput("smoking"),
+           plotOutput("cancer")
+           
+         )),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###############################################################################################################################
+## Recomendation Panel
+
+
+
+tabPanel("Recommendations",
+         mainPanel(span(style="color:black",
+                        strong(p(""),
+"The lungs are truly special organs within our bodies, they are responsible for oxygenating our blood and without we cannot live. 
+Our lungs draw in air from the atmosphere and utilize it and distribute throughout our body. 
+For these reasons, anything that we breathe in can impact our health and therefore our risk of developing lung cancer. 
+After many years of research, scientists now unanimously agree that tobacco use is the most important and significant risk factor for lung cancer. 
+In the U.S., over 87% of lung cancers are related to smoking and other forms of tobacco use. 
+Smoking not only impacts the person who is smoking, but also those around them. 
+Second-hand smoke is another concern, as those exposed are also at risk of developing lung cancer.",
+br(),
+
+p("Other environmental substances or exposures that can increase the risk of developing lung cancer include:"),
+
+br(),
+
+p("Asbestos, Radon", "Air-Pollution", "Industrial Substances (substances can include Arsenic, Uranium, Beryllium, Vinyl Chloride, Nickel Chromates, Coal Products, 
+  Mustard Gas, Chloromethyl Ethers, Gasoline, and Diesel Exhaust), and Radiation Exposure"),
+
+br(),
+
+p("The CDC Recommends the Following Ways to Stop Smoking"),
+
+br(),
+
+p("Most former smokers quit without using one of the treatments that scientific research has shown can work. However, the following treatments are proven to be effective for smokers who want help to quit:
+Brief help by a doctor (such as when a doctor takes 10 minutes or less to give a patient advice and assistance about quitting)
+  Individual, group, or telephone counseling
+  Behavioral therapies (such as training in problem solving)
+  Treatments with more person-to-person contact and more intensity (such as more or longer counseling sessions)
+  Programs to deliver treatments using mobile phones
+  Medications for quitting that have been found to be effective include the following:
+  Nicotine replacement products
+  Over-the-counter (nicotine patch [which is also available by prescription], gum, lozenge)
+  Prescription (nicotine patch, inhaler, nasal spray)
+  Prescription non-nicotine medications: bupropion SR (Zyban®), varenicline tartrate (Chantix®)
+  Counseling and medication are both effective for treating tobacco dependence, and using them together is more effective than using either one alone.
+  More information is needed about quitting for people who smoke cigarettes and also use other types of tobacco."),
+
+br(),
+p("Helpful Resources"),
+br(),
+p("Call 1-800-QUIT-NOW (1-800-784-8669) if you want help quitting. 
+  This is a free telephone support service that can help people who want to stop smoking or using tobacco.")
+  
+))),
+
+img(src="free.jpg", width=420,align="right")
+
+)
+
+
+######################################################################################################################################################
+## Do Not touch this part! This is to close the UI part
                            
                            ))
 ######################################################################################################################################################
@@ -218,6 +319,7 @@ server <- function(input, output,session) {
       ggtitle("Smoking is Directly Correlated to Lung Cancer") +
       #facet_grid(~Region)+
       geom_smooth(method = "lm") +
+      scale_color_brewer(palette="Dark2")+
       theme_bw()
   })
   
@@ -233,8 +335,73 @@ server <- function(input, output,session) {
                      pneumonia = as.numeric(input$pneumonia), asbestos = as.numeric(input$asbestos),
                      malignant_tumour = as.numeric(input$malignant_tumour), family_history = as.numeric(input$family_history))
     
+#lung_cancer_risk(age=50,sex=1,smoking=1,pneumonia=1,asbestos=1,malignant_tumour=1,family_history=1)
     
-    #lung_cancer_risk(age=50,sex=1,smoking=1,pneumonia=1,asbestos=1,malignant_tumour=1,family_history=1)
+  })
+
+##################################################################################################
+## Map
+  
+  states= map_data("state")
+  states$region=toTitleCase(states$region)
+  smokinglungcancer=read.csv("20112015smokingcancer.csv")
+  state_distribution=inner_join(states, smokinglungcancer, by = "region")
+  
+  output$smoking <- renderPlot({
+    smokingdata=state_distribution%>%
+      filter(year==input$year)
+    gg <- ggplot()
+    gg <- gg + geom_map(data=states, map=states,
+                        aes(long,lat, map_id=region),
+                        fill="#ffffff", color="#ffffff", size=0.15)
+    gg <- gg + geom_map(data=smokingdata, map=states,aes(fill=smoking, map_id=region),
+                        color="#ffffff", size=0.15)
+    gg <- gg + scale_fill_gradient(low='yellow', high='red', guide='colorbar',limits=c(9,30),name = "Smoking Rate(%)")
+    gg <- gg + labs(x=NULL, y=NULL)
+    gg <- gg + coord_map("albers", lat0 = 39, lat1 = 45)#+geom_text_repel(data = smokingdata, aes(long, lat, label = region), size = 3,box.padding = unit(0.1, 'lines'), force = 0.5) 
+    #gg <- gg + geom_text(aes(label=smoking))
+    #gg <- gg + ggrepel::geom_label_repel(data=smokingdata, aes(x=long, y=lat, label=region))
+    gg <- gg + theme(panel.border = element_blank())
+    gg <- gg + theme(panel.background = element_blank())
+    gg <- gg + theme(axis.ticks = element_blank())
+    gg <- gg + theme(axis.text = element_blank())
+    gg <- gg + ggtitle("Smoking Rate Distribution Accross U.S.") +theme(plot.title = element_text(size=35,face = "bold"))
+    gg
+    
+    
+    
+    
+    
+    
+    #ggplot(data=smoking,aes(x = long, y = lat,label=smoking, fill=smoking,group = region))+geom_polygon( color = "white") + coord_fixed(1.3)+scale_fill_gradient(low="blue", high="red",limits=c(9,30),name = "Smoking Rate(%)")+ geom_text_repel()
+  })
+  
+  
+  
+  output$cancer <- renderPlot({
+    cancerdata=state_distribution%>%filter(year==input$year)
+    
+    gg1 <- ggplot()
+    gg1 <- gg1 + geom_map(data=states, map=states,
+                          aes(x=long, y=lat, map_id=region),
+                          fill="#ffffff", color="#ffffff", size=0.15)
+    gg1 <- gg1 + geom_map(data=cancerdata, map=states,
+                          aes(fill=cancer, map_id=region),
+                          color="#ffffff", size=0.15)
+    gg1 <- gg1 + scale_fill_gradient(low='blue', high='green', 
+                                     guide='colorbar',limits=c(0.02,0.12),name = "Lung Cancer Rate(%)")
+    gg1 <- gg1 + labs(x=NULL, y=NULL)
+    gg1 <- gg1 + coord_map("albers", lat0 = 39, lat1 = 45) 
+    gg1 <- gg1 + theme(panel.border = element_blank())
+    gg1 <- gg1 + theme(panel.background = element_blank())
+    gg1 <- gg1 + theme(axis.ticks = element_blank())
+    gg1 <- gg1 + theme(axis.text = element_blank())
+    gg1 <- gg1 + ggtitle("Lung Cancer Rate Distribution Across the U.S.")+theme(plot.title = element_text(size=35,face = "bold"))
+    gg1    
+    
+    
+    
+    #ggplot(data = cancer,aes(x = long, y = lat, fill=smoking,group = region)) + geom_polygon( color = "white") + coord_fixed(1.3)+scale_fill_gradient(low="blue", high="red",limits=c(9,30),name = "Lung Cancer Rate(%)")
     
   })
   
@@ -245,10 +412,7 @@ server <- function(input, output,session) {
   
   
   
-  
   ######################################################################################################
-  # Do not touch anything after this part!!!!
-  
-  
+  # Do not touch anything after this part!!!! This closes the server :)
 }
 shinyApp(ui, server)
